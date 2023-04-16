@@ -1,0 +1,15 @@
+name: Continuous Integration
+
+on: push
+
+jobs:
+  frontend:
+    name: Frontend Pack
+    runs-on: 
+      group: deploy
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Test
+        run: echo "yes"
