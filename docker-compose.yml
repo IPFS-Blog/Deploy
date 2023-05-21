@@ -1,0 +1,93 @@
+version: '3'
+
+networks:
+  app:
+    driver: bridge
+  web:
+    driver: bridge
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: web3-nginx
+    environment:
+       - HOST=${HOST}
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - web
+    restart: always
+    # stdin_open: true
+    tty: true
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs:/var/log/nginx
+  db:
+    image: mariadb:10.6
+    container_name: web3-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MARIADB_USER: ${DB_USERNAME}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_DATABASE: ${DB_DATABASE}
+    networks:
+      - app
+    restart: always
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: web3-phpmyadmin
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - app
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      PMA_HOST: db
+      # PMA_USER: ${DB_USERNAME}
+      # PMA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+  backend:
+    # image: a20688392/ipfs-blog-backend:0.0.1
+    container_name: web3-backend
+    build:
+      # dockerfile: Dockerfile
+      context: ./Backend
+      target: production
+    command: /bin/sh -c "sh /migration-entrypoint.sh"
+    networks:
+      - app
+      - web
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+    depends_on:
+      - db
+  frontend:
+    # image: a20688392/ipfs-blog-frontend:0.0.1
+    container_name: web3-frontend
+    build:
+      # dockerfile: Dockerfile
+      context: ./Frontend
+      target: production
+    env_file:
+      - .env
+    environment:
+      - HOST=${HOST}
+      - NEXT_PUBLIC_API=${HOST}/api/v1
+    networks:
+      - web
