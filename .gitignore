@@ -15,9 +15,11 @@ lerna-debug.log*
 .DS_Store
 .env
 mysql/*
-data/logs
-data/keys.json
-data/database.sqlite
+Backend/logs
+Backend/mysql
+Backend/outputs
+ipfs/
+nginx/ssl
 
 # Tests
 /coverage
