@@ -75,7 +75,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
   backend:
-    image: a20688392/ipfs-blog-backend:0.0.1-old
+    image: a20688392/ipfs-blog-backend:latest
     container_name: web3-backend
     command: /bin/sh -c "sh /app/migration-entrypoint.sh"
     networks:
